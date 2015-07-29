@@ -38,13 +38,14 @@ func main() {
 func handlerCMDArgs() {
 	port := flag.String("port", ":9111", "port in server")
 	flag.Parse()
-	if err4 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err3 != nil {
+	if err4 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err4 != nil {
 		log.Fatal("failed to start server", err4)
 	}
 }
 
 func homePage(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
+	log.Println(request.URL)
 	fmt.Fprint(writer, pageTop, form)
 	if err != nil {
 		fmt.Fprintf(writer, anError, "problem with reflection of page")
