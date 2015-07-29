@@ -20,7 +20,7 @@ const (
 <title>Notices</title>
 <body><h3>Notices</h3>
 <p>You may create notice or delete all</p>`
-	form       = `<form action="/" method="POST"><label for="Notices">Input text of notice:</label><br /><input type="textarea" name="Notice" ><br /><input type="submit" name="sendButton" value="send"><input type="submit" name="deleteButton" value="Delete All"></form>`
+	form       = `<form action="/message" method="POST"><label for="Notices">Input text of notice:</label><br /><input type="textarea" name="Notice" ><br /><input type="submit" name="sendButton" value="send"><input type="submit" name="deleteButton" value="Delete All"></form>`
 	pageBottom = `</body></html>`
 	anError    = `<p class="error">%s</p>`
 )
@@ -31,7 +31,7 @@ var E []string
 
 func main() {
 	E = make([]string, 0)
-	http.HandleFunc("/", homePage)
+	http.HandleFunc("/message", homePage)
 	handlerCMDArgs()
 }
 
@@ -45,7 +45,6 @@ func handlerCMDArgs() {
 
 func homePage(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
-	log.Println(request.URL)
 	fmt.Fprint(writer, pageTop, form)
 	if err != nil {
 		fmt.Fprintf(writer, anError, "problem with reflection of page")
