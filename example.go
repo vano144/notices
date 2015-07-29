@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"sync"
@@ -34,7 +35,7 @@ func main() {
 }
 
 func handlerCMDArgs() {
-	port := flag.String("port", ":9111", "port in server")
+	port := flag.String("port", ":9888", "port in server")
 	flag.Parse()
 	if err3 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err3 != nil {
 		log.Fatal("Failed to start server", err3)
@@ -47,9 +48,11 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		fmt.Fprintf(writer, anError, "problem with reflection of page, 500 Internal Server Error")
 	} else {
-		if message, ok := processRequest(request); ok {
+		if message, ok := processRequest(request); ok && message != nil {
 			formatStats(message)
 			fmt.Fprint(writer, text)
+		} else if ok == true && message == nil {
+			fmt.Fprintf(writer, anError, "clear string in input form, 204 No Content")
 		}
 	}
 	fmt.Fprint(writer, pageBottom)
@@ -59,18 +62,26 @@ func processRequest(request *http.Request) ([]string, bool) {
 	s, d := " ", " "
 	s = request.FormValue("sendButton")
 	if s != " " {
-		if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
+		k := true
+		slice, found := request.Form["Notice"]
+		for i := 0; i < len(slice); i++ {
+			if slice[i] == "" {
+				k = false
+				break
+			}
+		}
+		if found && len(slice) > 0 && k {
 			s := ""
 			for i := 0; i < len(slice); i++ {
 				s += slice[i]
 			}
 			mu.Lock()
+			s = html.EscapeString(s)
 			E = append(E, s)
 			mu.Unlock()
 			return E, true
 		} else {
-			fmt.Fprintf(writer, anError, "clear string in input form, 204 No Content")
-			return nil, false
+			return nil, true
 		}
 	}
 	d = request.FormValue("deleteButton")
