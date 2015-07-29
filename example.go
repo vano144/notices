@@ -16,24 +16,25 @@ const (
 <title>Notices</title>
 <body><h3>Notices</h3>
 <p>You may create notice or delete all</p>`
-	form = `<form action="/" method="POST">
-<label for="Notices">Input text of notice:</label><br />
-<input type="textarea" name="Notice" ><br />
-<input type="submit" value="send">
-<input type="submit" value="Delete All">
-</form>`
+	form       = `<form action="/" method="POST"><label for="Notices">Input text of notice:</label><br /><input type="textarea" name="Notice" ><br /><input type="submit" name="sendButton" value="send"><input type="submit" name="deleteButton" value="Delete All"></form>`
 	pageBottom = `</body></html>`
 	anError    = `<p class="error">%s</p>`
 )
 
-type notices struct {
-	notice string
-}
+var text = " "
+var E []string
 
 func main() {
+	E = make([]string, 0)
 	http.HandleFunc("/", homePage)
-	if err := http.ListenAndServe(":9007", nil); err != nil {
-		log.Fatal("failed to start server", err)
+	handlerCMDArgs()
+}
+
+func handlerCMDArgs() {
+	port := flag.String("port", ":9111", "port in server")
+	flag.Parse()
+	if err3 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err3 != nil {
+		log.Fatal("failed to start server", err3)
 	}
 }
 
@@ -41,31 +42,45 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	fmt.Fprint(writer, pageTop, form)
 	if err != nil {
-		fmt.Fprintf(writer, anError, err)
+		log.Println("problem with reflection of page", anError)
 	} else {
 		if message, ok := processRequest(request); ok {
-			fmt.Fprint(writer, formatStats(message))
-		} else if message != "" {
-			fmt.Fprintf(writer, anError, message)
+			formatStats(message)
+			fmt.Fprint(writer, text)
 		}
 	}
 	fmt.Fprint(writer, pageBottom)
 }
 
-func processRequest(request *http.Request) (string, bool) {
-	if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
-		var k notices
-		for i := 0; i < len(slice); i++ {
-			k.notice += slice[i]
+func processRequest(request *http.Request) ([]string, bool) {
+	s := request.FormValue("sendButton")
+	if s == "send" {
+		if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
+			s := ""
+			for i := 0; i < len(slice); i++ {
+				s += slice[i]
+			}
+			E = append(E, s)
+			return E, true
+		} else {
+			log.Println("No input string, just click button, with clear string")
+			return nil, false
 		}
-		return k.notice, true
-	} else {
-		return "", false
 	}
-	return "", false
+	d := request.FormValue("deleteButton")
+	if d == "Delete All" {
+		text = " "
+		E = make([]string, 0)
+		return nil, false
+	}
+	return nil, false
 }
 
-func formatStats(stats string) string {
-	return fmt.Sprintf(`<textarea>
-%v</textarea>`, stats)
+func formatStats(stats []string) {
+	s := " "
+	text = " "
+	for i := 0; i < len(stats); i++ {
+		s += `<textarea>` + stats[i] + `</textarea>` + " "
+	}
+	text = text + " " + s + " "
 }
