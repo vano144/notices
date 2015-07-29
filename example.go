@@ -47,7 +47,7 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	fmt.Fprint(writer, pageTop, form)
 	if err != nil {
-		log.Println("problem with reflection of page", anError)
+		fmt.Fprintf(writer, anError, "problem with reflection of page")
 	} else {
 		if message, ok := processRequest(request); ok && message != nil {
 			formatStats(message)
