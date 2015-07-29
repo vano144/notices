@@ -38,8 +38,8 @@ func main() {
 func handlerCMDArgs() {
 	port := flag.String("port", ":9111", "port in server")
 	flag.Parse()
-	if err3 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err3 != nil {
-		log.Fatal("failed to start server", err3)
+	if err4 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err3 != nil {
+		log.Fatal("failed to start server", err4)
 	}
 }
 
