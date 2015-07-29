@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	fmt.Fprint(writer, pageTop, form)
 	if err != nil {
-		log.Println("problem with reflection of page", anError)
+		log.Println("problem with reflection of page")
 	} else {
 		if message, ok := processRequest(request); ok {
 			formatStats(message)
