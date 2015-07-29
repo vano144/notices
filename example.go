@@ -6,6 +6,7 @@ import (
 	"html"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -35,10 +36,10 @@ func main() {
 }
 
 func handlerCMDArgs() {
-	port := flag.String("port", ":9888", "port in server")
+	port := flag.String("port", ":9111", "port in server")
 	flag.Parse()
 	if err3 := http.ListenAndServeTLS(*port, "cert.pem", "key.pem", nil); err3 != nil {
-		log.Fatal("Failed to start server", err3)
+		log.Fatal("failed to start server", err3)
 	}
 }
 
@@ -46,7 +47,7 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	fmt.Fprint(writer, pageTop, form)
 	if err != nil {
-		fmt.Fprintf(writer, anError, "problem with reflection of page, 500 Internal Server Error")
+		log.Println("problem with reflection of page", anError)
 	} else {
 		if message, ok := processRequest(request); ok && message != nil {
 			formatStats(message)
@@ -59,33 +60,27 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 }
 
 func processRequest(request *http.Request) ([]string, bool) {
-	s, d := " ", " "
-	s = request.FormValue("sendButton")
-	if s != " " {
-		k := true
-		slice, found := request.Form["Notice"]
-		for i := 0; i < len(slice); i++ {
-			if slice[i] == "" {
-				k = false
-				break
-			}
-		}
-		if found && len(slice) > 0 && k {
+	s := request.FormValue("sendButton")
+	if s == "send" {
+		if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
 			s := ""
 			for i := 0; i < len(slice); i++ {
 				s += slice[i]
 			}
-			mu.Lock()
 			s = html.EscapeString(s)
-			E = append(E, s)
-			mu.Unlock()
-			return E, true
-		} else {
-			return nil, true
+			l := strings.Fields(s)
+			if len(l) > 0 {
+				mu.Lock()
+				E = append(E, s)
+				mu.Unlock()
+				return E, true
+			} else {
+				return nil, true
+			}
 		}
 	}
-	d = request.FormValue("deleteButton")
-	if d != " " {
+	d := request.FormValue("deleteButton")
+	if d != "" {
 		mu.Lock()
 		text = " "
 		E = make([]string, 0)
@@ -97,13 +92,11 @@ func processRequest(request *http.Request) ([]string, bool) {
 
 func formatStats(stats []string) {
 	s := " "
-	mu.Lock()
-	text = " "
-	mu.Unlock()
 	for i := 0; i < len(stats); i++ {
 		s += `<textarea>` + stats[i] + `</textarea>` + " "
 	}
 	mu.Lock()
+	text = " "
 	text = text + " " + s + " "
 	mu.Unlock()
 }
