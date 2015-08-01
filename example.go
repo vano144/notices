@@ -1,36 +1,59 @@
 package main
 
 import (
+	"errors"
 	"flag"
-	"fmt"
-	"html"
+	"html/template"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 )
 
-const (
-	pageTop = `<!DOCTYPE HTML>
-    <html>
-    <head>
-<style>
-.error{color:#FF0000;}
-</style></head>
-<title>Notices</title>
-<body><h3>Notices</h3>
-<p>You may create notice or delete all</p>`
-	form       = `<form action="/message" method="POST"><label for="Notices">Input text of notice:</label><br /><input type="textarea" name="Notice" ><br /><input type="submit" name="sendButton" value="send"><input type="submit" name="deleteButton" value="Delete All"></form>`
-	pageBottom = `</body></html>`
-	anError    = `<p class="error">%s</p>`
-)
+const templ = ` <!DOCTYPE HTML>
+<html>
+  <head>
+   	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+
+		</style>
+	</head>
+		<title>
+			Notices
+		</title>
+	<body>
+		<h3>Notices</h3>
+		<p>You may create notice or delete all</p>
+		<form action="/message" method="POST">
+		<input type="textarea" name="Notice" >
+		<input type="submit" name="sendButton" value="send">
+		<input type="submit" name="deleteButton" value="delete">
+		</form>
+		<ol>
+			{{ range .Slice }}
+			<li>{{.}}</li>
+		{{end}}
+		</ol>
+		<ol>
+			{{ range .Errors }}
+			<li>ERROR:{{.}}</li>
+		{{end}}
+		</ol>
+	</body>
+</html>
+`
+
+type notices struct {
+	Slice  []string
+	Errors []error
+}
 
 var mu = &sync.Mutex{}
-var text = " "
-var E []string
+var E notices
 
 func main() {
-	E = make([]string, 0)
+	E.Slice = make([]string, 0)
+	E.Errors = make([]error, 0)
 	http.HandleFunc("/message", homePage)
 	handlerCMDArgs()
 }
@@ -44,59 +67,50 @@ func handlerCMDArgs() {
 }
 
 func homePage(writer http.ResponseWriter, request *http.Request) {
+	var err2 error
+	E.Errors = make([]error, 0)
 	err := request.ParseForm()
-	fmt.Fprint(writer, pageTop, form)
-	if err != nil {
-		fmt.Fprintf(writer, anError, "problem with reflection of page")
-	} else {
-		if message, ok := processRequest(request); ok && message != nil {
-			formatStats(message)
-			fmt.Fprint(writer, text)
-		} else if ok == true && message == nil {
-			fmt.Fprintf(writer, anError, "clear string in input form, 204 No Content")
-		}
-	}
-	fmt.Fprint(writer, pageBottom)
-}
-
-func processRequest(request *http.Request) ([]string, bool) {
-	s := request.FormValue("sendButton")
-	if s == "send" {
+	t := template.New("Person template")
+	t, err1 := t.Parse(templ)
+	a := request.FormValue("sendButton")
+	if a != "" {
 		if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
 			s := ""
 			for i := 0; i < len(slice); i++ {
 				s += slice[i]
 			}
-			s = html.EscapeString(s)
 			l := strings.Fields(s)
 			if len(l) > 0 {
 				mu.Lock()
-				E = append(E, s)
+				E.Slice = append(E.Slice, s)
 				mu.Unlock()
-				return E, true
 			} else {
-				return nil, true
+				err2 = errors.New("clear string in input form, 204 No Content")
 			}
 		}
 	}
 	d := request.FormValue("deleteButton")
 	if d != "" {
 		mu.Lock()
-		text = " "
-		E = make([]string, 0)
+		E.Slice = make([]string, 0)
 		mu.Unlock()
-		return nil, false
 	}
-	return nil, false
-}
-
-func formatStats(stats []string) {
-	s := " "
-	for i := 0; i < len(stats); i++ {
-		s += `<textarea>` + stats[i] + `</textarea>` + " "
+	switch true {
+	case err != nil:
+		mu.Lock()
+		E.Errors = append(E.Errors, err)
+		mu.Unlock()
+		fallthrough
+	case err1 != nil:
+		mu.Lock()
+		E.Errors = append(E.Errors, err1)
+		mu.Unlock()
+		fallthrough
+	case err2 != nil:
+		mu.Lock()
+		E.Errors = append(E.Errors, err2)
+		mu.Unlock()
+	default:
 	}
-	mu.Lock()
-	text = " "
-	text = text + " " + s + " "
-	mu.Unlock()
+	t.Execute(writer, E)
 }
