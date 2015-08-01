@@ -24,7 +24,7 @@ func main() {
 	file := path.Join("html", "disignFile.html")
 	t, err1 = template.ParseFiles(file)
 	if err1 != nil {
-		log.Fatal("problem with parsing file")
+		log.Fatal("problem with parsing file", err1)
 	}
 	http.HandleFunc("/message", homePage)
 	port := flag.String("port", ":9111", "port in server")
@@ -38,7 +38,7 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-type", "text/html")
 	err := request.ParseForm()
 	if err != nil {
-		log.Fatal("Problem with parsing form")
+		log.Fatal("Problem with parsing form", err)
 	}
 	reqSend := request.PostFormValue("sendButton")
 	if reqSend != "" {
