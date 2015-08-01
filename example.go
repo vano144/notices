@@ -11,16 +11,16 @@ import (
 )
 
 type notices struct {
-	Slice []string
+	Store []string
 }
 
 var mu sync.Mutex
-var E notices
+var storeNotices notices
 var t *template.Template
 
 func main() {
 	var err1 error
-	E.Slice = make([]string, 0)
+	storeNotices.Store = make([]string, 0)
 	file := path.Join("html", "disignFile.html")
 	t, err1 = template.ParseFiles(file)
 	if err1 != nil {
@@ -35,26 +35,29 @@ func main() {
 }
 
 func homePage(writer http.ResponseWriter, request *http.Request) {
-	err := request.ParseForm()
-	if err != nil {
-		log.Fatal("Problem with parsing form")
-	}
-	a := request.FormValue("sendButton")
-	if a != "" {
-		if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
-			s := ""
-			s = strings.Join(slice, "")
-			mu.Lock()
-			E.Slice = append(E.Slice, s)
-			mu.Unlock()
+	var v string
+	request.FormValue(v)
+	if v == "" {
+		err := request.ParseForm()
+		if err != nil {
+			log.Fatal("Problem with parsing form")
 		}
-	} else {
-		d := request.FormValue("deleteButton")
-		if d != "" {
-			mu.Lock()
-			E.Slice = make([]string, 0)
-			mu.Unlock()
+		a := request.FormValue("sendButton")
+		if a != "" {
+			if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
+				s := strings.Join(slice, "")
+				mu.Lock()
+				storeNotices.Store = append(storeNotices.Store, s)
+				mu.Unlock()
+			}
+		} else {
+			d := request.FormValue("deleteButton")
+			if d != "" {
+				mu.Lock()
+				storeNotices.Store = make([]string, 0)
+				mu.Unlock()
+			}
 		}
+		t.Execute(writer, storeNotices)
 	}
-	t.Execute(writer, E)
 }
