@@ -12,13 +12,13 @@
 	<body>
 		<h3>Notices</h3>
 		<p>You may create notice or delete all</p>
-		<form  method="POST">
+		<form action="/message" method="POST">
 		<input type="text" name="Notice" >
 		<input type="submit" name="sendButton" value="send">
 		<input type="submit" name="deleteButton" value="delete">
 		</form>
 		<ol>
-			{{ range .Slice }}
+			{{ range .Store }}
 			<li>{{.}}</li>
 		{{end}}
 		</ol>
