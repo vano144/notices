@@ -31,6 +31,8 @@ func main() {
 	if err1 != nil {
 		log.Fatal("problem with parsing file", err1)
 	}
+	fs := http.FileServer(http.Dir("html"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/message/", homePage)
 	port := flag.String("port", ":9111", "port in server")
 	flag.Parse()
