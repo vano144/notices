@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"flag"
 	"html/template"
 	"log"
@@ -40,29 +39,8 @@ func main() {
 	}
 }
 
-func BasicAuth(w http.ResponseWriter, r *http.Request) (bool, string) {
-	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-	if len(s) != 2 {
-		return false, ""
-	}
-
-	b, err := base64.StdEncoding.DecodeString(s[1])
-	if err != nil {
-		return false, ""
-	}
-
-	pair := strings.SplitN(string(b), ":", 2)
-	if len(pair) != 2 {
-		return false, ""
-	}
-	if pair[0] == "invtest" {
-		return false, ""
-	}
-	return true, pair[0]
-}
-
 func homePage(writer http.ResponseWriter, request *http.Request) {
-	flg, name := BasicAuth(writer, request)
+	name, _, flg := request.BasicAuth()
 	if flg {
 		writer.Header().Set("Content-type", "text/html")
 		err := request.ParseForm()
@@ -91,6 +69,6 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 		}
 		t.Execute(writer, StoreNotices)
 	}
-	writer.Header().Set("WWW-Authenticate", `Basic realm="protectedpage, invalid name for test- invtest"`)
+	writer.Header().Set("WWW-Authenticate", `Basic realm="protectedpage"`)
 	writer.WriteHeader(401)
 }
