@@ -21,6 +21,11 @@ Z#note {
   margin-left: 50px;
   font-style: normal;
 }
+Z#time {
+  font-size: 12pt;
+  margin-left: 50px;
+  font-style: italic;
+}
 z#p {
   font-size: 12pt;
   margin-left: 10px;

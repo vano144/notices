@@ -3,8 +3,7 @@
   <head>
    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    	<link rel="stylesheet" href="style.css">
-   	<link rel="icon" href="favicon.ico" type="image/icon">
-		<link rel="shortcut icon" href="favicon.ico" type="image/icon">
+   	<link rel="icon" type="image/png" href="/static/favicon.png" >
 		<link rel="stylesheet" href="bootstrap.min.css">
    	<title>
 			Notices
@@ -35,7 +34,9 @@
 		<ul class="ter">
 			{{ range .Store }}
 			<li><z>{{.Owner}}</z><br>
-				<z id="note">{{.Note}}</z></li>
+				<z id="note">{{.Note}}</z><br>
+				<z id="time">{{.Time}}</z>
+				</li>
 		{{end}}
 		</ul>
 

@@ -2,17 +2,20 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"path"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Notice struct {
 	Note  string
 	Owner string
+	Time  string
 }
 
 type notices struct {
@@ -55,9 +58,11 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 
 				s := ""
 				s = strings.Join(slice, "")
+				tm := fmt.Sprint(time.Now().Local().Format("15:04"))
 				var k Notice
 				k.Note = s
 				k.Owner = name
+				k.Time = tm
 				StoreNotices.Lock()
 				StoreNotices.Store = append(StoreNotices.Store, k)
 				StoreNotices.Unlock()
