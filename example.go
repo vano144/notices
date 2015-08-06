@@ -50,46 +50,50 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 	name, _, flg := request.BasicAuth()
 	stri := fmt.Sprint(request.Header.Get("Accept"))
 	if strings.Contains(stri, "application/json`") {
+		if !flg {
+			writer.Write("Authorization is necessary")
+			return
+		}
 		res, erro := json.Marshal(StoreNotices)
 		if erro != nil {
 			writer.Header().Set("Content-type", "application/json")
 			writer.Write(res)
+			return
 		} else {
 			log.Println("Error Json")
 		}
-	} else {
-		if flg {
-			writer.Header().Set("Content-type", "text/html")
-			err := request.ParseForm()
-			if err != nil {
-				log.Fatal("Problem with parsing form", err)
-			}
-			reqSend := request.PostFormValue("sendButton")
-			if reqSend != "" {
-				if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
-
-					s := ""
-					s = strings.Join(slice, "")
-					tm := fmt.Sprint(time.Now().Local().Format("15:04"))
-					var k Notice
-					k.Note = s
-					k.Owner = name
-					k.Time = tm
-					StoreNotices.Lock()
-					StoreNotices.Store = append(StoreNotices.Store, k)
-					StoreNotices.Unlock()
-				}
-			} else {
-				reqDel := request.PostFormValue("deleteButton")
-				if reqDel != "" {
-					StoreNotices.Lock()
-					StoreNotices.Store = make([]Notice, 0)
-					StoreNotices.Unlock()
-				}
-			}
-			t.Execute(writer, StoreNotices)
-		}
-		writer.Header().Set("WWW-Authenticate", `Basic realm="protectedpage"`)
-		writer.WriteHeader(401)
 	}
+	if flg {
+		writer.Header().Set("Content-type", "text/html")
+		err := request.ParseForm()
+		if err != nil {
+			log.Fatal("Problem with parsing form", err)
+		}
+		reqSend := request.PostFormValue("sendButton")
+		if reqSend != "" {
+			if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
+
+				s := ""
+				s = strings.Join(slice, "")
+				tm := fmt.Sprint(time.Now().Local().Format("15:04"))
+				var k Notice
+				k.Note = s
+				k.Owner = name
+				k.Time = tm
+				StoreNotices.Lock()
+				StoreNotices.Store = append(StoreNotices.Store, k)
+				StoreNotices.Unlock()
+			}
+		} else {
+			reqDel := request.PostFormValue("deleteButton")
+			if reqDel != "" {
+				StoreNotices.Lock()
+				StoreNotices.Store = make([]Notice, 0)
+				StoreNotices.Unlock()
+			}
+		}
+		t.Execute(writer, StoreNotices)
+	}
+	writer.Header().Set("WWW-Authenticate", `Basic realm="protectedpage"`)
+	writer.WriteHeader(401)
 }
