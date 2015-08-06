@@ -26,7 +26,6 @@ type notices struct {
 
 var StoreNotices notices
 var t *template.Template
-var te *template.Template
 
 func main() {
 	var err1 error
@@ -34,9 +33,7 @@ func main() {
 	StoreNotices.Store = make([]Notice, 0)
 	file := path.Join("html", "disignFile.html")
 	t, err1 = template.ParseFiles(file)
-	file1 := path.Join("html", "asas.html")
-	te, err2 = template.ParseFiles(file1)
-	if err1 != nil || err2 != nil {
+	if err1 != nil {
 		log.Fatal("problem with parsing file", err1)
 	}
 	fs := http.FileServer(http.Dir("html"))
