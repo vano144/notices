@@ -1,25 +1,12 @@
-body {
-  font-family: Arial, Verdana,  sans-serif;
-  font-size: 11pt;
-  background-color: #696969;
-  color: #333;
-}
-h3 {
+h1 {
   color: #F0FFFF;
   font-weight: 500;
   font-style: italic;
   font-size: 24pt;
   font-family: Georgia, Times, serif;
 }
-p {
-  color: #F0FFFF;
-  text-align: justify;
-  margin-left: 60px;
-  margin-right: 10px;
-  border-left: 1px solid #999;
-  border-bottom: 1px solid #999;
-  padding-left: 10px;
-  padding-bottom: 10px;
+body {
+  background-color: #696969;
 }
 Z {
   color: #F0FFFF;
@@ -34,28 +21,15 @@ Z#note {
   margin-left: 50px;
   font-style: normal;
 }
-.note {
-  margin-left: 5px;
-  text-align:left;
-  color:#F0FFFF;
-  font-weight: normal;
-  font-size: 14pt;
-  padding: 5px;
+z#p {
+  font-size: 12pt;
+  margin-left: 10px;
+  font-style: italic;
 }
-.buttonSend {
-  color: #006400;
-  background-color: #FFFFFF;
+.border-container {
+	border:1px solid white;
+	padding: 5px;
 }
-.buttonDelete {
-  color: #A0522D;
-  background-color: #FFFFFF;
-}
-.textarea {
-  color: #F0FFFF;
-  background-color: #696969;
-  font-weight: normal;
-  font-size: 14pt;
-  width: 400px;
-  height: 20px;
-  border-color: #696969;
+.ter {
+  color:white;
 }

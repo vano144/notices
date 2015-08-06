@@ -1,34 +1,43 @@
- <!DOCTYPE HTML>
+<!DOCTYPE HTML>
 <html>
   <head>
    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
    	<link rel="stylesheet" href="style.css">
    	<link rel="icon" href="favicon.ico" type="image/icon">
 		<link rel="shortcut icon" href="favicon.ico" type="image/icon">
+		<link rel="stylesheet" href="bootstrap.min.css">
    	<title>
 			Notices
 		</title>
 		<style type="text/css" media="screen">
+	@import url("/static/bootstrap.min.css");
+	@import url("/static/bootstrap.min.js");
 	@import url("/static/style.css");
 	@import url("/static/favicon.ico");
 </style>
 	</head>
 	<body>
 
-		<h3>Notices</h3>
-		<p>You may create notice or delete all</p>
-		<form action="/message/" method="POST">
-		<input class="textarea"  type="text" name="Notice" >
-		<input class="buttonSend" type="submit" name="sendButton" value="send">
-		<input class="buttonDelete" type="submit" name="deleteButton" value="delete">
-		</form>
+		<h1>Notices</h1>
+		<p><z id="p">You may create notice or delete all</z></p>
 		<div>
-		<ol>
+		<form  action="/message/" method="POST">
+		<div class="col-xs-5">
+		<input class="form-control" type="text" name="Notice" placeholder="input notice">
+		</div>
+		<div class="btn-group">
+		<input type="submit" class="btn btn-success" name="sendButton" value="send">
+		<input type="submit" class="btn btn-danger" name="deleteButton" value="delete">
+		</div>
+		</form>
+		</div>
+		<div>
+		<ul class="ter">
 			{{ range .Store }}
-			<li class="note"><z>{{.Owner}}</z><br>
+			<li><z>{{.Owner}}</z><br>
 				<z id="note">{{.Note}}</z></li>
 		{{end}}
-		</ol>
+		</ul>
 
 		</div>
 	</body>
