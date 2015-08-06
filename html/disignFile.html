@@ -2,26 +2,34 @@
 <html>
   <head>
    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   	<link rel="stylesheet" href="style.css">
+   	<link rel="icon" href="favicon.ico" type="image/icon">
+		<link rel="shortcut icon" href="favicon.ico" type="image/icon">
    	<title>
 			Notices
 		</title>
-		<style>
-
-		</style>
+		<style type="text/css" media="screen">
+	@import url("/static/style.css");
+	@import url("/static/favicon.ico");
+</style>
 	</head>
-
 	<body>
+
 		<h3>Notices</h3>
 		<p>You may create notice or delete all</p>
 		<form action="/message/" method="POST">
-		<input type="text" name="Notice" >
-		<input type="submit" name="sendButton" value="send">
-		<input type="submit" name="deleteButton" value="delete">
+		<input class="textarea"  type="text" name="Notice" >
+		<input class="buttonSend" type="submit" name="sendButton" value="send">
+		<input class="buttonDelete" type="submit" name="deleteButton" value="delete">
 		</form>
+		<div>
 		<ol>
 			{{ range .Store }}
-			<li>{{.Owner}}:{{.Note}} </li>
+			<li class="note"><z>{{.Owner}}</z><br>
+				<z id="note">{{.Note}}</z></li>
 		{{end}}
 		</ol>
+
+		</div>
 	</body>
 </html>

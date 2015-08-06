@@ -52,6 +52,7 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 		reqSend := request.PostFormValue("sendButton")
 		if reqSend != "" {
 			if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
+
 				s := ""
 				s = strings.Join(slice, "")
 				var k Notice
