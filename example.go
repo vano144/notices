@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
@@ -25,13 +26,17 @@ type notices struct {
 
 var StoreNotices notices
 var t *template.Template
+var te *template.Template
 
 func main() {
 	var err1 error
+	var err2 error
 	StoreNotices.Store = make([]Notice, 0)
 	file := path.Join("html", "disignFile.html")
 	t, err1 = template.ParseFiles(file)
-	if err1 != nil {
+	file1 := path.Join("html", "asas.html")
+	te, err2 = template.ParseFiles(file1)
+	if err1 != nil || err2 != nil {
 		log.Fatal("problem with parsing file", err1)
 	}
 	fs := http.FileServer(http.Dir("html"))
@@ -46,37 +51,48 @@ func main() {
 
 func homePage(writer http.ResponseWriter, request *http.Request) {
 	name, _, flg := request.BasicAuth()
-	if flg {
-		writer.Header().Set("Content-type", "text/html")
-		err := request.ParseForm()
-		if err != nil {
-			log.Fatal("Problem with parsing form", err)
-		}
-		reqSend := request.PostFormValue("sendButton")
-		if reqSend != "" {
-			if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
-
-				s := ""
-				s = strings.Join(slice, "")
-				tm := fmt.Sprint(time.Now().Local().Format("15:04"))
-				var k Notice
-				k.Note = s
-				k.Owner = name
-				k.Time = tm
-				StoreNotices.Lock()
-				StoreNotices.Store = append(StoreNotices.Store, k)
-				StoreNotices.Unlock()
-			}
+	stri := fmt.Sprint(request.Header.Get("Accept"))
+	if strings.Contains(stri, "application/json`") {
+		res, erro := json.Marshal(StoreNotices)
+		if erro != nil {
+			writer.Header().Set("Content-type", "application/json")
+			writer.Write(res)
 		} else {
-			reqDel := request.PostFormValue("deleteButton")
-			if reqDel != "" {
-				StoreNotices.Lock()
-				StoreNotices.Store = make([]Notice, 0)
-				StoreNotices.Unlock()
-			}
+			log.Println("Error Json")
 		}
-		t.Execute(writer, StoreNotices)
+	} else {
+		if flg {
+			writer.Header().Set("Content-type", "text/html")
+			err := request.ParseForm()
+			if err != nil {
+				log.Fatal("Problem with parsing form", err)
+			}
+			reqSend := request.PostFormValue("sendButton")
+			if reqSend != "" {
+				if slice, found := request.Form["Notice"]; found && len(slice) > 0 {
+
+					s := ""
+					s = strings.Join(slice, "")
+					tm := fmt.Sprint(time.Now().Local().Format("15:04"))
+					var k Notice
+					k.Note = s
+					k.Owner = name
+					k.Time = tm
+					StoreNotices.Lock()
+					StoreNotices.Store = append(StoreNotices.Store, k)
+					StoreNotices.Unlock()
+				}
+			} else {
+				reqDel := request.PostFormValue("deleteButton")
+				if reqDel != "" {
+					StoreNotices.Lock()
+					StoreNotices.Store = make([]Notice, 0)
+					StoreNotices.Unlock()
+				}
+			}
+			t.Execute(writer, StoreNotices)
+		}
+		writer.Header().Set("WWW-Authenticate", `Basic realm="protectedpage"`)
+		writer.WriteHeader(401)
 	}
-	writer.Header().Set("WWW-Authenticate", `Basic realm="protectedpage"`)
-	writer.WriteHeader(401)
 }
